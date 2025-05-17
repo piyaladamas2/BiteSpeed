@@ -28,8 +28,11 @@ public class ContactServiceImpl implements ContactService {
 
   @Override
   public IdentifyResponse identify(String email, String phoneNumber) {
+
+    // Step 1: Find all contacts matching either email or phoneNumber
     List<Contact> matchedContacts = contactRepository.findByPhoneNumberOrEmail(email, phoneNumber);
 
+    // Step 2: If no contacts found, create a new primary
     if (matchedContacts.isEmpty()) {
       Contact newContact = new Contact();
       newContact.setEmail(email);
@@ -39,47 +42,58 @@ public class ContactServiceImpl implements ContactService {
       newContact.setUpdatedAt(LocalDateTime.now());
 
       contactRepository.save(newContact);
-
+      // Since it's a new contact, no secondary contacts exist yet
       return buildResponse(newContact, Collections.emptyList());
     }
 
-    // Find primary contact
+    // Step 3: Among matched contacts, identify the earliest-created PRIMARY contact
+    // This will be treated as the canonical primary contact
+
     Contact primary = matchedContacts.stream()
         .filter(c -> "primary".equals(c.getLinkPrecedence()))
         .min(Comparator.comparing(Contact::getCreatedAT))
-        .orElse(matchedContacts.get(0));
+        .orElse(matchedContacts.get(0)); // fallback in case no primary is found
 
-    // If input has new data , create secondary contact
+    // Step 4: Check if the incoming email and phone combination already exists
     boolean existingMatch = matchedContacts.stream().anyMatch(
         c -> Objects.equals(c.getEmail(), email) && Objects.equals(c.getPhoneNumber(), phoneNumber));
 
+    // Step 5: If the exact combination does not exist, create a new SECONDARY
+    // contact
     if (!existingMatch) {
       Contact secondary = new Contact();
       secondary.setEmail(email);
       secondary.setPhoneNumber(phoneNumber);
-      secondary.setLinkedId(primary.getId());
+      secondary.setLinkedId(primary.getId()); // Link to the identified primary
       secondary.setLinkPrecedence("secondary");
       secondary.setCreatedAT(LocalDateTime.now());
       secondary.setUpdatedAt(LocalDateTime.now());
+
       contactRepository.save(secondary);
-      matchedContacts.add(secondary);
+      matchedContacts.add(secondary); // Include in the list for response building
     }
 
-    // Normalize data: primary + all linked secondaries
-    // To collect the unique IDs of all currently matched contacts. This will help
-    // prevent re-adding the same contacts later.
+    // Step 6: Normalize data by including secondaries explicitly linked to the
+    // primary
+    // This ensures we have the complete set of all related contacts
 
-    // It is not used anywhere after being created still it was needed for Duplicate
-    // Prevention
+    // Optional step to collect all contact IDs (not currently used but could help
+    // with deduplication if expanded)
 
     Set<Integer> allContactIds = matchedContacts.stream().map(Contact::getId).collect(Collectors.toSet());
+
+    // Add all secondaries linked to the primary that might not be already included
     matchedContacts.addAll(contactRepository.findByLinkedId(primary.getId()));
 
+    // Step 7: Build and return the IdentifyResponse with full contact linkage
     return buildResponse(primary, matchedContacts);
   }
 
-  // To improve code clarity, maintainability, and reusability creating a seperate
-  // method
+  /**
+   * To improve code clarity, maintainability, and reusability creating a seperate
+   * Helper method to build the IdentifyResponse with all collected emails,
+   * phoneNumbers, and secondaryContactIds.
+   */
 
   private IdentifyResponse buildResponse(Contact primary, List<Contact> allContacts) {
     Set<String> emails = new HashSet<>();
@@ -91,17 +105,21 @@ public class ContactServiceImpl implements ContactService {
         emails.add(cont.getEmail());
       if (cont.getPhoneNumber() != null)
         phoneNumbers.add(cont.getPhoneNumber());
+
+      // If the contact is not the primary, collect it as a secondary
       if (!Objects.equals(cont.getId(), primary.getId())) {
         secondaryIds.add(cont.getId());
       }
     }
 
+    // Creating the nested response object
     IdentifyResponse.ContactResponse contactData = new IdentifyResponse.ContactResponse();
     contactData.setPrimaryContactId(primary.getId());
     contactData.setEmails(emails);
     contactData.setPhoneNumbers(phoneNumbers);
     contactData.setSecondaryContactIds(secondaryIds);
 
+    // Final response object wrapping the contact data
     IdentifyResponse response = new IdentifyResponse();
     response.setContact(contactData);
     return response;
