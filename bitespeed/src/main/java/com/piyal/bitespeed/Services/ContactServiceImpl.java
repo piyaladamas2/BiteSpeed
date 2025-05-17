@@ -83,6 +83,7 @@ public class ContactServiceImpl implements ContactService {
     Set<Integer> allContactIds = matchedContacts.stream().map(Contact::getId).collect(Collectors.toSet());
 
     // Add all secondaries linked to the primary that might not be already included
+
     matchedContacts.addAll(contactRepository.findByLinkedId(primary.getId()));
 
     // Step 7: Build and return the IdentifyResponse with full contact linkage
