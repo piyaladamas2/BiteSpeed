@@ -2,6 +2,7 @@
 FROM gradle:8.4-jdk17 AS builder
 WORKDIR /app
 COPY . .
+RUN ls -la  # Debug: show what files made it into the image
 RUN gradle build --no-daemon
 
 # -------- Runtime Stage --------
