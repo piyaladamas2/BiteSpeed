@@ -1,7 +1,12 @@
-.gradle
-build
-out
+# Ignore IDE/editor stuff
+.idea/
+.vscode/
 *.iml
-*.log
-.git
-.idea
+
+# Ignore build output
+build/
+out/
+
+# Ignore OS/filesystem junk
+.DS_Store
+Thumbs.db
