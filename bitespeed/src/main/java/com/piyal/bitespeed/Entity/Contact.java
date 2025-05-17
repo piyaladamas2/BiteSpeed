@@ -2,7 +2,7 @@ package com.piyal.bitespeed.Entity;
 
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,7 +22,7 @@ public class Contact {
   private int id;
   private String phoneNumber;
   private String email;
-  private int LinkedId;
+  private int linkedId;
   private String linkPrecedence;
   private LocalDateTime createdAT;
   private LocalDateTime updatedAt;
