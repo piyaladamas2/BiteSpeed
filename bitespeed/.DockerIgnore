@@ -1,12 +1,12 @@
-# Ignore IDE/editor stuff
+# Ignore build outputs
+build/
+.gradle/
+
+# Ignore IDE/editor files
 .idea/
 .vscode/
 *.iml
 
-# Ignore build output
-build/
-out/
-
-# Ignore OS/filesystem junk
+# Ignore system files
 .DS_Store
 Thumbs.db
