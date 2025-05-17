@@ -15,6 +15,7 @@ import com.piyal.bitespeed.DTO.IdentifyResponse;
 import com.piyal.bitespeed.Entity.Contact;
 import com.piyal.bitespeed.Exception.InvalidContactException;
 import com.piyal.bitespeed.Repository.ContactRepository;
+import jakarta.transaction.Transactional;
 
 @Service
 public class ContactServiceImpl implements ContactService {
@@ -24,6 +25,7 @@ public class ContactServiceImpl implements ContactService {
   private ContactRepository contactRepository;
 
   @Override
+  @Transactional
   public IdentifyResponse identify(String email, String phoneNumber) {
 
     // Handelling null entry
@@ -65,6 +67,7 @@ public class ContactServiceImpl implements ContactService {
 
     // 3. Make all other contacts secondary and link to primary
     List<Contact> secondaryContacts = new ArrayList<>();
+
     for (Contact c : matchedContacts) {
       if (c.getId() != primaryContact.getId()) {
         if (!"secondary".equalsIgnoreCase(c.getLinkPrecedence()) ||
