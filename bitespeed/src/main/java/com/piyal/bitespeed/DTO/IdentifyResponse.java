@@ -20,9 +20,9 @@ public class IdentifyResponse {
   @NoArgsConstructor
   @Builder
   public static class ContactResponse {
-    private int primaryContactId;
+    private Long primaryContactId;
     private Set<String> emails;
     private Set<String> phoneNumbers;
-    private List<Integer> secondaryContactIds;
+    private List<Long> secondaryContactIds;
   }
 }

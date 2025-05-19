@@ -21,12 +21,12 @@ public class Contact {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int id;
+  private Long id;
   private String phoneNumber;
   private String email;
-  private int linkedId;
+  private Long linkedId;
   private String linkPrecedence;
-  private LocalDateTime createdAT;
+  private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private LocalDateTime deletedAt;
 }

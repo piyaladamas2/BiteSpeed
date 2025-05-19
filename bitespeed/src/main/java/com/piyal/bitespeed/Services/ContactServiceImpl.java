@@ -41,9 +41,9 @@ public class ContactServiceImpl implements ContactService {
       Contact newContact = Contact.builder()
           .email(email)
           .phoneNumber(phoneNumber)
-          .linkedId(0)
+          .linkedId((long) 0)
           .linkPrecedence("primary")
-          .createdAT(LocalDateTime.now())
+          .createdAt(LocalDateTime.now())
           .updatedAt(LocalDateTime.now())
           .build();
 
@@ -62,7 +62,7 @@ public class ContactServiceImpl implements ContactService {
     // 2. Determine primary contact (earliest created with linkPrecedence "primary")
     Contact primaryContact = matchedContacts.stream()
         .filter(c -> "primary".equalsIgnoreCase(c.getLinkPrecedence()))
-        .min(Comparator.comparing(Contact::getCreatedAT))
+        .min(Comparator.comparing(Contact::getCreatedAt))
         .orElse(matchedContacts.get(0));
 
     // 3. Make all other contacts secondary and link to primary
@@ -92,7 +92,7 @@ public class ContactServiceImpl implements ContactService {
           .phoneNumber(phoneNumber)
           .linkedId(primaryContact.getId())
           .linkPrecedence("secondary")
-          .createdAT(LocalDateTime.now())
+          .createdAt(LocalDateTime.now())
           .updatedAt(LocalDateTime.now())
           .build();
       contactRepository.save(newSecondary);
@@ -114,7 +114,7 @@ public class ContactServiceImpl implements ContactService {
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
 
-    List<Integer> secondaryIds = allContacts.stream()
+    List<Long> secondaryIds = allContacts.stream()
         .filter(c -> c.getId() != primaryContact.getId())
         .map(Contact::getId)
         .collect(Collectors.toList());
